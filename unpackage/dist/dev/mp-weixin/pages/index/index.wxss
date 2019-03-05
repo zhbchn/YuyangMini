@@ -1,0 +1,14 @@
+
+.uni-media-list-body{
+	height: auto;
+}
+.uni-media-list-text-top{
+	line-height: 1.6em;
+}
+.uni-text{
+	padding: 10rpx 2%;
+}
+.text-box{
+	padding: 5rpx 0 5rpx 50rpx;
+}
+

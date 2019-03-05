@@ -1,0 +1,30 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/info/info",
+    "pages/blutooth/blutooth"
+  ],
+  "subPackages": [],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "uni-app",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  },
+  "usingComponents": {},
+  "tabBar": {
+    "color": "#333333",
+    "selectedColor": "#00B26A",
+    "backgroundColor": "#EEEEEE",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "产品信息"
+      },
+      {
+        "pagePath": "pages/blutooth/blutooth",
+        "text": "蓝牙"
+      }
+    ]
+  }
+}
