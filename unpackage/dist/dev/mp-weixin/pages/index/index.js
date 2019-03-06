@@ -79,7 +79,19 @@
         success: function success(res) {
           console.log('条码类型：' + res.scanType);
           console.log('条码内容：' + res.result);
-          _this.name = res.result;
+          uni.request({
+            url: 'http://192.168.0.56/mobile/index/getinfo',
+            data: {
+              'id': res.result },
+
+            success: function success(res) {
+              console.log(res.data);
+              _this.name = res.data.name;
+              _this.model = res.data.model;
+              _this.serial = res.data.serial;
+            } });
+
+          // _this.name=res.result
         } });
 
     } } };exports.default = _default;
