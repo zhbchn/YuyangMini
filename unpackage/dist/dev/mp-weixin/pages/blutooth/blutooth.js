@@ -19,24 +19,52 @@
 
 {
   data: function data() {
-    return {};
-
+    return {
+      d: [] };
 
   },
   methods: {
-    blue: function blue() {
+    connect: function connect() {
+      var _this = this;
+      //打开蓝牙模块
       uni.openBluetoothAdapter({
         success: function success(res) {
-          // console.log(res)
-          uni.showToast({
-            title: '成功调用',
-            icon: 'success' });
-
+          console.log(res);
         },
-        fail: function fail() {
-          uni.showToast({
-            title: '调用失败，',
-            icon: 'none' });
+        fail: function fail(res) {
+          console.log(res);
+        },
+        complete: function complete(res) {
+          uni.onBluetoothAdapterStateChange(function (res) {
+            // 							if(res.available){
+            // 							  setTimeout(function(){
+            // 								_this.connect();
+            // 							  },2000);
+            // 							}
+          });
+
+          //开始搜索蓝牙设备
+          var mac = "90:70:65:FC:6C:7A";
+          uni.startBluetoothDevicesDiscovery({
+            services: [],
+            success: function success(res) {
+              uni.onBluetoothDeviceFound(function (res) {
+                var devices = res.devices;
+                for (var i = 0; i < devices.length; i++) {
+                  if (devices[i].deviceId == mac) {
+                    console.log("find");
+                    console.log(devices[i]);
+                    uni.stopBluetoothDevicesDiscovery({
+                      success: function success(res) {return console.log(res);},
+                      fail: function fail(res) {return console.log(res);} });
+
+                  }
+                }
+              });
+            },
+            fail: function fail(res) {
+              console.log(res);
+            } });
 
         } });
 
@@ -80,7 +108,7 @@ var render = function() {
           "button",
           {
             attrs: { type: "default", eventid: "6c696e17-0" },
-            on: { click: _vm.blue }
+            on: { click: _vm.connect }
           },
           [_vm._v("蓝牙")]
         )
