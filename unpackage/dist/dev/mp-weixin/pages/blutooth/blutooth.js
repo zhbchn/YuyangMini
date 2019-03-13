@@ -44,28 +44,113 @@
           });
 
           //开始搜索蓝牙设备
-          var mac = "90:70:65:FC:6C:7A";
           uni.startBluetoothDevicesDiscovery({
             services: [],
             success: function success(res) {
-              uni.onBluetoothDeviceFound(function (res) {
-                var devices = res.devices;
-                for (var i = 0; i < devices.length; i++) {
-                  if (devices[i].deviceId == mac) {
-                    console.log("find");
-                    console.log(devices[i]);
-                    uni.stopBluetoothDevicesDiscovery({
-                      success: function success(res) {return console.log(res);},
-                      fail: function fail(res) {return console.log(res);} });
-
-                  }
-                }
-              });
+              console.log(res);
             },
             fail: function fail(res) {
               console.log(res);
             } });
 
+
+          //监听搜索到的设备
+          // let mac="90:70:65:FC:6C:7A";
+          var mac = "01:02:03:04:06:99";
+          uni.onBluetoothDeviceFound(function (res) {
+            var devices = res.devices;var _loop = function _loop(
+            i) {
+              if (devices[i].deviceId == mac) {
+                console.log(devices[i]);
+
+                //连接指定设备
+                uni.createBLEConnection({
+                  deviceId: devices[i].deviceId,
+                  success: function success(res) {
+                    console.log(res);
+
+                    //获取设备所有服务
+                    var device_id = devices[i].deviceId;
+                    uni.getBLEDeviceServices({
+                      deviceId: device_id,
+                      success: function success(res) {
+                        console.log(res);
+
+                        //获取服务特征值
+                        var service_id = res.services[0].uuid;
+                        uni.getBLEDeviceCharacteristics({
+                          deviceId: device_id,
+                          serviceId: service_id,
+                          success: function success(res) {
+                            console.log(res);
+
+                            //订阅指定特征值
+                            var notify_id = res.characteristics[0].uuid;
+                            uni.notifyBLECharacteristicValueChange({
+                              deviceId: device_id,
+                              serviceId: service_id,
+                              characteristicId: notify_id,
+                              state: true,
+                              success: function success(res) {
+                                console.log(res);
+                              },
+                              fail: function fail(res) {
+                                console.log(res);
+                              },
+                              complete: function complete(res) {
+
+                              } });
+
+
+                            //类型转换函数
+                            function ab2hex(buffer) {
+                              var hexArr = Array.prototype.map.call(
+                              new Uint8Array(buffer),
+                              function (bit) {
+                                return '00' + bit.toString(16).slice(-2);
+                              });
+
+                              return hexArr.join('');
+                            }
+
+                            //监听特征值变化
+                            uni.onBLECharacteristicValueChange(function (res) {
+                              console.log(res);
+                            });
+                          },
+                          fail: function fail(res) {
+                            console.log(res);
+                          },
+                          complete: function complete(res) {
+
+                          } });
+
+                      },
+                      fail: function fail(res) {
+                        console.log(res);
+                      },
+                      complete: function complete(res) {
+
+                      } });
+
+                  },
+                  fail: function fail(res) {
+                    console.log(res);
+                  },
+                  complete: function complete(res) {
+
+                  } });
+
+
+
+                //停止蓝牙搜索
+                uni.stopBluetoothDevicesDiscovery({
+                  success: function success(res) {return console.log(res);},
+                  fail: function fail(res) {return console.log(res);} });
+
+              }};for (var i = 0; i < devices.length; i++) {_loop(i);
+            }
+          });
         } });
 
     } } };exports.default = _default;
