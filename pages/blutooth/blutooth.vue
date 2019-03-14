@@ -1,6 +1,9 @@
 <template>
 	<view class="content">
 		<view class="uni-text">
+			<p>{{code}}</p>
+		</view>
+		<view class="uni-text">
 			<button type="default" @click="connect">蓝牙</button>
 		</view>
 	</view>
@@ -10,7 +13,8 @@
 	export default {
 		data() {
 			return {
-				d:[]
+				d:[],
+				code:'无数据'
 			};
 		},
 		methods:{
@@ -97,15 +101,16 @@
 																var hexArr=Array.prototype.map.call(
 																	new Uint8Array(buffer),
 																	function(bit){
-																		return ('00'+bit.toString(16).slice(-2))
+																		return (bit.toString(16).slice(-2))
 																	}
 																)
-																return hexArr.join('');
+																return hexArr.join(' ');
 															}
 															
 															//监听特征值变化
 															uni.onBLECharacteristicValueChange(function(res){
-																console.log(res);
+																console.log(ab2hex(res.value));
+																_this.code=ab2hex(res.value);
 															})
 														},
 														fail: (res) => {

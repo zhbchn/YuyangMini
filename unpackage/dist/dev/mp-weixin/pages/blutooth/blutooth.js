@@ -17,10 +17,14 @@
 
 
 
+
+
+
 {
   data: function data() {
     return {
-      d: [] };
+      d: [],
+      code: '无数据' };
 
   },
   methods: {
@@ -107,15 +111,16 @@
                               var hexArr = Array.prototype.map.call(
                               new Uint8Array(buffer),
                               function (bit) {
-                                return '00' + bit.toString(16).slice(-2);
+                                return bit.toString(16).slice(-2);
                               });
 
-                              return hexArr.join('');
+                              return hexArr.join(' ');
                             }
 
                             //监听特征值变化
                             uni.onBLECharacteristicValueChange(function (res) {
-                              console.log(res);
+                              console.log(ab2hex(res.value));
+                              _this.code = ab2hex(res.value);
                             });
                           },
                           fail: function fail(res) {
@@ -185,6 +190,12 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("view", { staticClass: "content" }, [
+    _c(
+      "view",
+      { staticClass: "uni-text" },
+      [_c("p", [_vm._v(_vm._s(_vm.code))])],
+      1
+    ),
     _c(
       "view",
       { staticClass: "uni-text" },
