@@ -20,25 +20,57 @@
 
 
 
+
+
+
+
 {
   data: function data() {
     return {
-      d: [],
-      code: '无数据' };
+      status: '',
+      code: '无数据',
+      flag: [false, true, true],
+      device_id: '',
+      service_id: '',
+      characteristic_id: '' };
 
   },
   methods: {
+    arrayBufferToHexString: function arrayBufferToHexString(buffer) {
+      var bufferType = Object.prototype.toString.call(buffer);
+      if (buffer != '[object ArrayBuffer]') {
+        return;
+      }
+      var dataView = new DataView(buffer);
+
+      var hexStr = '';
+      for (var i = 0; i < dataView.byteLength; i++) {
+        var str = dataView.getUint8(i);
+        var hex = (str & 0xff).toString(16);
+        hex = hex.length === 1 ? ',' + hex : hex;
+        hexStr += hex;
+      }
+      return hexStr.toUpperCase();
+    },
+    ab2hex: function ab2hex(buffer) {
+      var hexArr = Array.prototype.map.call(
+      new Uint8Array(buffer),
+      function (bit) {
+        return bit.toString(16).slice(-2);
+      });
+
+      return hexArr.join(' ').toUpperCase();
+    },
     connect: function connect() {
       var _this = this;
+      _this.flag[0] = true;
+      _this.status = '初始化蓝牙模块...';
       //打开蓝牙模块
       uni.openBluetoothAdapter({
         success: function success(res) {
           console.log(res);
-        },
-        fail: function fail(res) {
-          console.log(res);
-        },
-        complete: function complete(res) {
+          _this.status = '初始化成功！';
+
           uni.onBluetoothAdapterStateChange(function (res) {
             // 							if(res.available){
             // 							  setTimeout(function(){
@@ -52,6 +84,7 @@
             services: [],
             success: function success(res) {
               console.log(res);
+              _this.status = '开始搜索附近蓝牙设备...';
             },
             fail: function fail(res) {
               console.log(res);
@@ -62,38 +95,41 @@
           // let mac="90:70:65:FC:6C:7A";
           var mac = "01:02:03:04:06:99";
           uni.onBluetoothDeviceFound(function (res) {
-            var devices = res.devices;var _loop = function _loop(
-            i) {
+            var devices = res.devices;
+            for (var i = 0; i < devices.length; i++) {
               if (devices[i].deviceId == mac) {
                 console.log(devices[i]);
+                _this.status = '发现目标设备';
+                _this.device_id = devices[i].deviceId;
 
                 //连接指定设备
                 uni.createBLEConnection({
-                  deviceId: devices[i].deviceId,
+                  deviceId: _this.device_id,
                   success: function success(res) {
+                    _this.status = '成功连接到设备！';
                     console.log(res);
 
                     //获取设备所有服务
-                    var device_id = devices[i].deviceId;
                     uni.getBLEDeviceServices({
-                      deviceId: device_id,
+                      deviceId: _this.device_id,
                       success: function success(res) {
                         console.log(res);
+                        _this.service_id = res.services[0].uuid;
 
                         //获取服务特征值
-                        var service_id = res.services[0].uuid;
+                        var service_id = _this.service_id;
                         uni.getBLEDeviceCharacteristics({
-                          deviceId: device_id,
-                          serviceId: service_id,
+                          deviceId: _this.device_id,
+                          serviceId: _this.service_id,
                           success: function success(res) {
                             console.log(res);
+                            _this.characteristic_id = res.characteristics[0].uuid;
 
                             //订阅指定特征值
-                            var notify_id = res.characteristics[0].uuid;
                             uni.notifyBLECharacteristicValueChange({
-                              deviceId: device_id,
-                              serviceId: service_id,
-                              characteristicId: notify_id,
+                              deviceId: _this.device_id,
+                              serviceId: _this.service_id,
+                              characteristicId: _this.characteristic_id,
                               state: true,
                               success: function success(res) {
                                 console.log(res);
@@ -106,21 +142,10 @@
                               } });
 
 
-                            //类型转换函数
-                            function ab2hex(buffer) {
-                              var hexArr = Array.prototype.map.call(
-                              new Uint8Array(buffer),
-                              function (bit) {
-                                return bit.toString(16).slice(-2);
-                              });
-
-                              return hexArr.join(' ');
-                            }
-
                             //监听特征值变化
                             uni.onBLECharacteristicValueChange(function (res) {
-                              console.log(ab2hex(res.value));
-                              _this.code = ab2hex(res.value);
+                              console.log(_this.ab2hex(res.value));
+                              _this.code = _this.ab2hex(res.value);
                             });
                           },
                           fail: function fail(res) {
@@ -153,10 +178,29 @@
                   success: function success(res) {return console.log(res);},
                   fail: function fail(res) {return console.log(res);} });
 
-              }};for (var i = 0; i < devices.length; i++) {_loop(i);
+              }
             }
           });
+        },
+        fail: function fail(res) {
+          console.log(res);
+          _this.flag[0] = false;
+        },
+        complete: function complete(res) {
+
         } });
+
+    },
+
+    sendC1: function sendC1() {
+      //设定要发送的数据
+      var code = 'C1 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00';
+
+      //向蓝牙设备特征值中写入二进制数据
+      uni.writeBLECharacteristicValue({
+        deviceId: _this.device_id,
+        serviceId: _this.service_id,
+        characteristicId: _this.characteristic_id });
 
     } } };exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ "./node_modules/@dcloudio/uni-mp-weixin/dist/index.js")["default"]))
@@ -193,7 +237,10 @@ var render = function() {
     _c(
       "view",
       { staticClass: "uni-text" },
-      [_c("p", [_vm._v(_vm._s(_vm.code))])],
+      [
+        _c("p", [_vm._v("C0信息:" + _vm._s(_vm.code))]),
+        _c("p", [_vm._v("当前状态:" + _vm._s(_vm.status))])
+      ],
       1
     ),
     _c(
@@ -203,10 +250,33 @@ var render = function() {
         _c(
           "button",
           {
-            attrs: { type: "default", eventid: "6c696e17-0" },
+            attrs: {
+              type: "primary",
+              disabled: _vm.flag[0],
+              eventid: "6c696e17-0"
+            },
             on: { click: _vm.connect }
           },
-          [_vm._v("蓝牙")]
+          [_vm._v("连接蓝牙")]
+        )
+      ],
+      1
+    ),
+    _c(
+      "view",
+      { staticClass: "uni-text" },
+      [
+        _c(
+          "button",
+          {
+            attrs: {
+              type: "default",
+              disabled: _vm.flag[1],
+              eventid: "6c696e17-1"
+            },
+            on: { click: _vm.sendC1 }
+          },
+          [_vm._v("发送C1")]
         )
       ],
       1
