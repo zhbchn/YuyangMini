@@ -24,11 +24,18 @@
 
 
 
+
+
+
+
+
 {
   data: function data() {
     return {
       status: '',
-      code: '无数据',
+      c0: '无数据',
+      c1: '无数据',
+      c2: '无数据',
       flag: [false, true, true],
       device_id: '',
       service_id: '',
@@ -36,22 +43,6 @@
 
   },
   methods: {
-    arrayBufferToHexString: function arrayBufferToHexString(buffer) {
-      var bufferType = Object.prototype.toString.call(buffer);
-      if (buffer != '[object ArrayBuffer]') {
-        return;
-      }
-      var dataView = new DataView(buffer);
-
-      var hexStr = '';
-      for (var i = 0; i < dataView.byteLength; i++) {
-        var str = dataView.getUint8(i);
-        var hex = (str & 0xff).toString(16);
-        hex = hex.length === 1 ? ',' + hex : hex;
-        hexStr += hex;
-      }
-      return hexStr.toUpperCase();
-    },
     ab2hex: function ab2hex(buffer) {
       var hexArr = Array.prototype.map.call(
       new Uint8Array(buffer),
@@ -61,6 +52,11 @@
 
       return hexArr.join(' ').toUpperCase();
     },
+    arr2ab: function arr2ab(arr) {
+      var arrayBuffer = new Uint8Array(arr).buffer;
+      return arrayBuffer;
+    },
+
     connect: function connect() {
       var _this = this;
       _this.flag[0] = true;
@@ -142,10 +138,25 @@
                               } });
 
 
+                            //允许发送C1、C2命令
+                            _this.flag[1] = false;
+                            _this.flag[2] = false;
+
                             //监听特征值变化
                             uni.onBLECharacteristicValueChange(function (res) {
-                              console.log(_this.ab2hex(res.value));
-                              _this.code = _this.ab2hex(res.value);
+                              var code = _this.ab2hex(res.value);
+                              console.log(code);
+                              switch (code.substring(0, 2)) {
+                                case 'C0':
+                                  _this.c0 = code;
+                                  break;
+                                case 'C1':
+                                  _this.c1 = code;
+                                  break;
+                                case 'C2':
+                                  _this.c2 = code;
+                                  break;}
+
                             });
                           },
                           fail: function fail(res) {
@@ -194,13 +205,49 @@
 
     sendC1: function sendC1() {
       //设定要发送的数据
-      var code = 'C1 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00';
+      var arrC1 = ['0xC1', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
+
+      //字符串转arraybuffer
+      var ab = this.arr2ab(arrC1);
+
+      var _this = this;
 
       //向蓝牙设备特征值中写入二进制数据
       uni.writeBLECharacteristicValue({
-        deviceId: _this.device_id,
-        serviceId: _this.service_id,
-        characteristicId: _this.characteristic_id });
+        deviceId: this.device_id,
+        serviceId: this.service_id,
+        characteristicId: this.characteristic_id,
+        value: ab,
+        success: function success(res) {
+          console.log(res);
+        },
+        fail: function fail(res) {
+          console.log(res);
+        } });
+
+    },
+
+    sendC2: function sendC2() {
+      //设定要发送的数据
+      var arrC2 = ['0xC2', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00'];
+
+      //字符串转arraybuffer
+      var ab = this.arr2ab(arrC2);
+
+      var _this = this;
+
+      //向蓝牙设备特征值中写入二进制数据
+      uni.writeBLECharacteristicValue({
+        deviceId: this.device_id,
+        serviceId: this.service_id,
+        characteristicId: this.characteristic_id,
+        value: ab,
+        success: function success(res) {
+          console.log(res);
+        },
+        fail: function fail(res) {
+          console.log(res);
+        } });
 
     } } };exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ "./node_modules/@dcloudio/uni-mp-weixin/dist/index.js")["default"]))
@@ -238,7 +285,9 @@ var render = function() {
       "view",
       { staticClass: "uni-text" },
       [
-        _c("p", [_vm._v("C0信息:" + _vm._s(_vm.code))]),
+        _c("p", [_vm._v("C0:" + _vm._s(_vm.c0))]),
+        _c("p", [_vm._v("C1:" + _vm._s(_vm.c1))]),
+        _c("p", [_vm._v("C2:" + _vm._s(_vm.c2))]),
         _c("p", [_vm._v("当前状态:" + _vm._s(_vm.status))])
       ],
       1
@@ -277,6 +326,25 @@ var render = function() {
             on: { click: _vm.sendC1 }
           },
           [_vm._v("发送C1")]
+        )
+      ],
+      1
+    ),
+    _c(
+      "view",
+      { staticClass: "uni-text" },
+      [
+        _c(
+          "button",
+          {
+            attrs: {
+              type: "default",
+              disabled: _vm.flag[2],
+              eventid: "6c696e17-2"
+            },
+            on: { click: _vm.sendC2 }
+          },
+          [_vm._v("发送C2")]
         )
       ],
       1
