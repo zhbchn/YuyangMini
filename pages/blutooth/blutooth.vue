@@ -1,25 +1,31 @@
 <template>
-	<view class="content">
-		<view class="uni-text">
-			<p>C0:{{c0}}</p>
-			<p>C1:{{c1}}</p>
-			<p>C2:{{c2}}</p>
-			<p>当前状态:{{status}}</p>
-		</view>
-		<view class="uni-text">
-			<button type="primary" @click="connect" :disabled="flag[0]">连接蓝牙</button>
-		</view>
-		<view class="uni-text">
-			<button type="default" @click="sendC1" :disabled="flag[1]">发送C1</button>
-		</view>
-		<view class="uni-text">
-			<button type="default" @click="sendC2" :disabled="flag[2]">发送C2</button>
+	<view>
+		<view class="uni-padding-wrap">
+			<uni-card 
+				title="当前信息" 
+				thumbnail="" 
+				extra="" 
+				note="实时数据">
+				<p>C0:{{c0}}</p>
+				<p>C1:{{c1}}</p>
+				<p>C2:{{c2}}</p>
+				<p>当前状态:{{status}}</p>
+			</uni-card>
+			<button class="uni-common-mt" type="primary" @click="connect" :disabled="flag[0]">连接蓝牙</button>
+			<button class="uni-common-mt" type="default" @click="sendC1" :disabled="flag[1]">发送C1</button>
+			<button class="uni-common-mt" type="default" @click="sendC2" :disabled="flag[2]">发送C2</button>
+			<canvas style="width: 300px; height: 200px;" canvas-id="firstCanvas"></canvas>
 		</view>
 	</view>
 </template>
 
 <script>
+	import {uniBadge} from '@dcloudio/uni-ui';
+	import uniCard from "@dcloudio/uni-ui/lib/uni-card/uni-card.vue"
+
 	export default {
+		components: {uniBadge,uniCard},
+		
 		data() {
 			return {
 				status:'',
@@ -32,6 +38,7 @@
 				characteristic_id:''
 			};
 		},
+		
 		methods:{
 			ab2hex(buffer){
 				var hexArr=Array.prototype.map.call(
@@ -245,7 +252,9 @@
 </script>
 
 <style>
-.uni-text{
-		padding: 10upx 2%;
+	.uni-padding-wrap{
+		display: flex;
+		flex-direction: column;
+		align-items: baseeline;
 	}
 </style>

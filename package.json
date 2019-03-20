@@ -1,0 +1,23 @@
+{
+  "name": "YuyangMini",
+  "version": "1.0.0",
+  "description": "为宇扬开发的uni-app",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crabfrommars/YuyangMini.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/crabfrommars/YuyangMini/issues"
+  },
+  "homepage": "https://github.com/crabfrommars/YuyangMini#readme",
+  "dependencies": {
+    "@dcloudio/uni-ui": "0.0.5"
+  }
+}
