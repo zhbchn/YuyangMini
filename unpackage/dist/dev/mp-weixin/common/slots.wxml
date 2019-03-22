@@ -1,4 +1,1 @@
-<import src="/node-modules/@dcloudio/uni-ui/lib/uni-card/uni-card.vue.wxml" />
-
-<template name="6c696e17-default-6c696e17-0"><view class="_p 6c696e17">C0:{{c0}}</view><view class="_p 6c696e17">C1:{{c1}}</view><view class="_p 6c696e17">C2:{{c2}}</view><view class="_p 6c696e17">当前状态:{{status}}</view></template>
 

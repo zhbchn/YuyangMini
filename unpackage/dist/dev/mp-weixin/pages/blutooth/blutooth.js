@@ -115,6 +115,9 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
 
 
 
+
+
+
 var _uniCard = _interopRequireDefault(__webpack_require__(/*! @dcloudio/uni-ui/lib/uni-card/uni-card.vue */ "C:\\Users\\Administrator\\Documents\\HBuilderProjects\\YuyangMini\\node_modules\\@dcloudio\\uni-ui\\lib\\uni-card\\uni-card.vue"));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}var _default =
 
 {
@@ -122,7 +125,9 @@ var _uniCard = _interopRequireDefault(__webpack_require__(/*! @dcloudio/uni-ui/l
 
   data: function data() {
     return {
-      status: '',
+      device_num: 0,
+      devices: [],
+      status: '无',
       c0: '无数据',
       c1: '无数据',
       c2: '无数据',
@@ -134,6 +139,9 @@ var _uniCard = _interopRequireDefault(__webpack_require__(/*! @dcloudio/uni-ui/l
   },
 
   methods: {
+    /**
+              * arraybuffer转字符串方法
+              */
     ab2hex: function ab2hex(buffer) {
       var hexArr = Array.prototype.map.call(
       new Uint8Array(buffer),
@@ -143,9 +151,72 @@ var _uniCard = _interopRequireDefault(__webpack_require__(/*! @dcloudio/uni-ui/l
 
       return hexArr.join(' ').toUpperCase();
     },
+
+    /**
+        * 数组转arraybuffer方法
+        */
     arr2ab: function arr2ab(arr) {
       var arrayBuffer = new Uint8Array(arr).buffer;
       return arrayBuffer;
+    },
+
+    /**
+        * 测试方法
+        */
+    test: function test(item, index) {
+      uni.showModal({
+        title: '信息',
+        content: index + '\n' + item.id + '\n' + item.name });
+
+    },
+
+    /**
+        * 扫描设备
+        */
+    scan: function scan() {
+      var _this = this;
+      _this.flag[0] = true;
+      _this.status = '初始化蓝牙模块...';
+
+      //打开蓝牙模块
+      uni.openBluetoothAdapter({
+        success: function success(res) {
+          _this.status = '初始化成功！';
+
+          //搜索蓝牙设备
+          uni.startBluetoothDevicesDiscovery({
+            services: [],
+            success: function success(res) {
+              _this.status = '开始搜索附近蓝牙设备...';
+            },
+            fail: function fail(res) {
+
+            } });
+
+
+          //监听搜索到的蓝牙设备
+          uni.onBluetoothDeviceFound(function (res) {
+            var devices = res.devices;
+            for (var i = 0; i < devices.length; i++) {
+              // console.log(devices[i]);
+              _this.devices.push({ name: devices[i].localName, id: devices[i].deviceId });
+              _this.device_num++;
+            }
+          });
+
+          //10秒后停止蓝牙搜索
+          setTimeout(function () {
+            uni.stopBluetoothDevicesDiscovery({
+              success: function success(res) {return console.log(res);},
+              fail: function fail(res) {return console.log(res);} });
+
+          }, 10000);
+
+        },
+        fail: function fail(res) {
+
+        } });
+
     },
 
     connect: function connect() {
@@ -505,75 +576,61 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("view", [
-    _c(
-      "view",
-      { staticClass: "uni-padding-wrap" },
-      [
-        _c(
-          "uni-card",
-          {
-            attrs: {
-              title: "当前信息",
-              thumbnail: "",
-              extra: "",
-              note: "实时数据",
-              mpcomid: "6c696e17-0"
-            }
-          },
-          [
-            _c("p", [_vm._v("C0:" + _vm._s(_vm.c0))]),
-            _c("p", [_vm._v("C1:" + _vm._s(_vm.c1))]),
-            _c("p", [_vm._v("C2:" + _vm._s(_vm.c2))]),
-            _c("p", [_vm._v("当前状态:" + _vm._s(_vm.status))])
-          ],
-          1
-        ),
-        _c(
-          "button",
-          {
-            staticClass: "uni-common-mt",
-            attrs: {
-              type: "primary",
-              disabled: _vm.flag[0],
-              eventid: "6c696e17-0"
+    _c("view", { staticClass: "uni-padding-wrap uni-common-mt" }, [
+      _c(
+        "view",
+        {},
+        [
+          _c("p", [_vm._v("当前蓝牙设备：" + _vm._s(_vm.device_num))]),
+          _c(
+            "scroll-view",
+            { staticClass: "scroll-Y", attrs: { "scroll-y": "true" } },
+            _vm._l(_vm.devices, function(item, index) {
+              return _c(
+                "view",
+                {
+                  staticClass: "scroll-view-item uni-bg-red uni-common-mt",
+                  staticStyle: { width: "80%" },
+                  attrs: { eventid: "6c696e17-0-" + index },
+                  on: {
+                    click: function($event) {
+                      _vm.test(item, index)
+                    }
+                  }
+                },
+                [
+                  _c("p", [_vm._v("设备名:" + _vm._s(item.name))]),
+                  _c("p", [_vm._v("设备ID:" + _vm._s(item.id))])
+                ],
+                1
+              )
+            })
+          )
+        ],
+        1
+      ),
+      _c(
+        "view",
+        {},
+        [
+          _c("p", [_vm._v("当前状态:" + _vm._s(_vm.status))]),
+          _c(
+            "button",
+            {
+              staticStyle: { width: "100%", "background-color": "#1E9FFF" },
+              attrs: {
+                type: "primary",
+                disabled: _vm.flag[0],
+                eventid: "6c696e17-1"
+              },
+              on: { click: _vm.scan }
             },
-            on: { click: _vm.connect }
-          },
-          [_vm._v("连接蓝牙")]
-        ),
-        _c(
-          "button",
-          {
-            staticClass: "uni-common-mt",
-            attrs: {
-              type: "default",
-              disabled: _vm.flag[1],
-              eventid: "6c696e17-1"
-            },
-            on: { click: _vm.sendC1 }
-          },
-          [_vm._v("发送C1")]
-        ),
-        _c(
-          "button",
-          {
-            staticClass: "uni-common-mt",
-            attrs: {
-              type: "default",
-              disabled: _vm.flag[2],
-              eventid: "6c696e17-2"
-            },
-            on: { click: _vm.sendC2 }
-          },
-          [_vm._v("发送C2")]
-        ),
-        _c("canvas", {
-          staticStyle: { width: "300px", height: "200px" },
-          attrs: { "canvas-id": "firstCanvas" }
-        })
-      ],
-      1
-    )
+            [_vm._v("开始扫描")]
+          )
+        ],
+        1
+      )
+    ])
   ])
 }
 var staticRenderFns = []

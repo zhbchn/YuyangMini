@@ -250,7 +250,10 @@
 }
 
 
-.uni-padding-wrap{
+page{
+	background-color: #F4F5F6;
+}
+view{
 	display: -webkit-box;
 	display: -webkit-flex;
 	display: -ms-flexbox;
@@ -260,9 +263,9 @@
 	-webkit-flex-direction: column;
 	    -ms-flex-direction: column;
 	        flex-direction: column;
-	-webkit-box-align: baseeline;
-	-webkit-align-items: baseeline;
-	    -ms-flex-align: baseeline;
-	        align-items: baseeline;
+}
+.scroll-Y{
+	height: 550rpx;
+	background-color: #FFFFFF;
 }
 

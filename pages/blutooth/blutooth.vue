@@ -1,20 +1,23 @@
 <template>
 	<view>
-		<view class="uni-padding-wrap">
-			<uni-card 
-				title="当前信息" 
-				thumbnail="" 
-				extra="" 
-				note="实时数据">
-				<p>C0:{{c0}}</p>
-				<p>C1:{{c1}}</p>
-				<p>C2:{{c2}}</p>
+		<view class="uni-padding-wrap uni-common-mt">
+			<view class="">
+				<p>当前蓝牙设备：{{device_num}}</p>
+				<scroll-view class="scroll-Y" scroll-y="true">
+					<view class="scroll-view-item uni-bg-red uni-common-mt" 
+					v-for="(item,index) in devices" 
+					style="width: 80%;" @click="test(item,index)">
+						<p>设备名:{{item.name}}</p>
+						<p>设备ID:{{item.id}}</p>
+					</view>
+				</scroll-view>
+			</view>
+			<view class="">
 				<p>当前状态:{{status}}</p>
-			</uni-card>
-			<button class="uni-common-mt" type="primary" @click="connect" :disabled="flag[0]">连接蓝牙</button>
-			<button class="uni-common-mt" type="default" @click="sendC1" :disabled="flag[1]">发送C1</button>
-			<button class="uni-common-mt" type="default" @click="sendC2" :disabled="flag[2]">发送C2</button>
-			<canvas style="width: 300px; height: 200px;" canvas-id="firstCanvas"></canvas>
+				<button type="primary" @click="scan" :disabled="flag[0]" style="width: 100%;background-color: #1E9FFF;">开始扫描</button>
+				<!-- <button class="uni-common-mt" type="default" @click="sendC1" :disabled="flag[1]">发送C1</button>
+				<button class="uni-common-mt" type="default" @click="sendC2" :disabled="flag[2]">发送C2</button> -->
+			</view>
 		</view>
 	</view>
 </template>
@@ -28,7 +31,9 @@
 		
 		data() {
 			return {
-				status:'',
+				device_num:0,
+				devices:[],
+				status:'无',
 				c0:'无数据',
 				c1:'无数据',
 				c2:'无数据',
@@ -40,6 +45,9 @@
 		},
 		
 		methods:{
+			/**
+			 * arraybuffer转字符串方法
+			 */
 			ab2hex(buffer){
 				var hexArr=Array.prototype.map.call(
 					new Uint8Array(buffer),
@@ -49,9 +57,72 @@
 				)
 				return hexArr.join(' ').toUpperCase();
 			},
+			
+			/**
+			 * 数组转arraybuffer方法
+			 */
 			arr2ab(arr){
 				let arrayBuffer=new Uint8Array(arr).buffer
 				return arrayBuffer;
+			},
+			
+			/**
+			 * 测试方法
+			 */
+			test(item,index){
+				uni.showModal({
+					title:'信息',
+					content:index+'\n'+item.id+'\n'+item.name
+				})
+			},
+			
+			/**
+			 * 扫描设备
+			 */
+			scan(){
+				let _this=this;
+				_this.flag[0]=true;
+				_this.status='初始化蓝牙模块...'
+				
+				//打开蓝牙模块
+				uni.openBluetoothAdapter({
+					success: (res) => {
+						_this.status='初始化成功！'
+						
+						//搜索蓝牙设备
+						uni.startBluetoothDevicesDiscovery({
+							services:[],
+							success: (res) => {
+								_this.status='开始搜索附近蓝牙设备...'
+							},
+							fail: (res) => {
+								
+							}
+						})
+						
+						//监听搜索到的蓝牙设备
+						uni.onBluetoothDeviceFound((res)=>{
+							let devices=res.devices;
+							for(let i=0;i<devices.length;i++){
+								// console.log(devices[i]);
+								_this.devices.push({name:devices[i].localName,id:devices[i].deviceId});
+								_this.device_num++;
+							}
+						})
+						
+						//10秒后停止蓝牙搜索
+						setTimeout(function(){
+							uni.stopBluetoothDevicesDiscovery({
+								success:(res)=>console.log(res),
+								fail:(res)=>console.log(res)
+							});
+						},10000)
+						
+					},
+					fail: (res) => {
+						
+					}
+				})
 			},
 
 			connect(){
@@ -252,9 +323,15 @@
 </script>
 
 <style>
-	.uni-padding-wrap{
+	page{
+		background-color: #F4F5F6;
+	}
+	view{
 		display: flex;
 		flex-direction: column;
-		align-items: baseeline;
+	}
+	.scroll-Y{
+		height: 550upx;
+		background-color: #FFFFFF;
 	}
 </style>
